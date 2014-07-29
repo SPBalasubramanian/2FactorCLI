@@ -18,3 +18,8 @@ Once you decode the qr code, it'll be a quasi-url that contains something like
     
 Use ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 as the secret passed to the app
 
+
+# Example
+
+    2factorcli.py add facebook FFFFFF email@example.org
+    2factorcli.py get facebook
