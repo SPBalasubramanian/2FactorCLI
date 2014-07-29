@@ -23,3 +23,9 @@ Use ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 as the secret passed to the app
 
     2factorcli.py add facebook FFFFFF email@example.org
     2factorcli.py get facebook
+
+# Install
+
+Install via pip:
+
+    pip install 2factorcli
