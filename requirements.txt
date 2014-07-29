@@ -1,0 +1,4 @@
+onetimepass
+python-gnupg
+docopt
+
