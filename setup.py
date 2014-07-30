@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # coding=utf-8
 
 try:
@@ -10,13 +10,13 @@ from pip.req import parse_requirements
 
 config = {
     'name': '2factorcli',
-    'version': '0.0.2',
+    'version': '1.0.0',
     'description': 'This is a simple python program to allow you to store and '
     ' generate time-based one-time passwords in a GPG encrypted vault.',
     'author': 'Rob Smith',
     'author_email': 'kormoc@gmail.com',
     'url': 'https://github.com/kormoc/2FactorCLI',
-    'scripts': ['2factorcli.py'],
+    'scripts': ['2factorcli'],
     'license': 'MIT',
     'classifiers': [
         'Development Status :: 5 - Production/Stable',
