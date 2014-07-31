@@ -3,13 +3,13 @@
 Allow generation of 2 factor auth tokens via cli
 
 Usage:
-    2factorcli.py [options] get <name>
     2factorcli.py [options] add <name> <secret> [<description>] [<padding>]
+    2factorcli.py [options] delete <name>
+    2factorcli.py [options] get <name>
     2factorcli.py [options] list
     2factorcli.py [options] rename <name> <newname>
     2factorcli.py [options] set-description <name> <description>
     2factorcli.py [options] set-padding <name> <padding>
-    2factorcli.py [options] delete <name>
 
 Options:
   -v, --vault=<path>            GPG vault of secrets        [default: ~/.2factorcli.gpg]
@@ -104,16 +104,6 @@ def main():
     # Commands!
     ###########################################################################
 
-    if args['list']:
-        data = "Name Description\n"
-        data += "---- -----------\n"
-        for name in sorted(secrets.keys()):
-            data += "%s %s\n" % (name, secrets[name]['description'])
-        print(columnize(data))
-        sys.exit(0)
-
-    ###########################################################################
-
     if args['add']:
         if args['<secret>'] is None:
             print("<secret> is required!")
@@ -138,12 +128,10 @@ def main():
 
     ###########################################################################
 
-    if args['rename']:
-        if args['<newname>'] in secrets:
-            print("%s already exists! Please delete it before renaming"
-                  % args['<newname>'])
+    if args['delete']:
+        if args['<name>'] not in secrets:
+            print('%s is not a known site!' % args['<name>'])
             sys.exit(1)
-        secrets[args['<newname>']] = secrets[args['<name>']]
         del secrets[args['<name>']]
         update_vault(secrets,
                      vault_path,
@@ -160,6 +148,31 @@ def main():
         token = onetimepass.get_totp(secrets[args['<name>']]['secret'])
         token = str(token).zfill(secrets[args['<name>']]['padding'])
         print(token)
+        sys.exit(0)
+
+    ###########################################################################
+
+    if args['list']:
+        data = "Name Description\n"
+        data += "---- -----------\n"
+        for name in sorted(secrets.keys()):
+            data += "%s %s\n" % (name, secrets[name]['description'])
+        print(columnize(data))
+        sys.exit(0)
+
+    ###########################################################################
+
+    if args['rename']:
+        if args['<newname>'] in secrets:
+            print("%s already exists! Please delete it before renaming"
+                  % args['<newname>'])
+            sys.exit(1)
+        secrets[args['<newname>']] = secrets[args['<name>']]
+        del secrets[args['<name>']]
+        update_vault(secrets,
+                     vault_path,
+                     fingerprint=args['--fingerprint'],
+                     use_agent=use_agent)
         sys.exit(0)
 
     ###########################################################################
@@ -190,18 +203,6 @@ def main():
 
     ###########################################################################
 
-    if args['delete']:
-        if args['<name>'] not in secrets:
-            print('%s is not a known site!' % args['<name>'])
-            sys.exit(1)
-        del secrets[args['<name>']]
-        update_vault(secrets,
-                     vault_path,
-                     fingerprint=args['--fingerprint'],
-                     use_agent=use_agent)
-        sys.exit(0)
-
-    ###########################################################################
     print("Command is required!")
     sys.exit(1)
 
