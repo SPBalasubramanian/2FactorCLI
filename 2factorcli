@@ -3,13 +3,14 @@
 Allow generation of 2 factor auth tokens via cli
 
 Usage:
-    2factorcli.py [options] add <name> <secret> [<description>] [<padding>]
+    2factorcli.py [options] add <name> <secret> [<description>] [<padding>] [<interval>]
     2factorcli.py [options] delete <name>
     2factorcli.py [options] get <name>
     2factorcli.py [options] list
     2factorcli.py [options] rename <name> <newname>
     2factorcli.py [options] set-description <name> <description>
     2factorcli.py [options] set-padding <name> <padding>
+    2factorcli.py [options] set-interval <name> <interval>
 
 Options:
   -v, --vault=<path>            GPG vault of secrets        [default: ~/.2factorcli.gpg]
@@ -89,11 +90,20 @@ def main():
     if args['--disable-agent']:
         use_agent = False
 
-    # Unwritten defaults
+    # Defaults!
+    _defaults = {
+        'description': '',
+        'padding': 6,
+        'interval': 30,
+    }
+
+    # Set args to defaults
     if args['<description>'] is None:
-        args['<description>'] = ''
+        args['<description>'] = _defaults['description']
     if args['<padding>'] is None:
-        args['<padding>'] = 6
+        args['<padding>'] = _defaults['padding']
+    if args['<interval>'] is None:
+        args['<interval>'] = _defaults['interval']
 
     # Find the vault path
     vault_path = os.path.abspath(os.path.expanduser(args['--vault']))
@@ -119,6 +129,7 @@ def main():
             'description': args['<description>'],
             'name': args['<name>'],
             'padding': args['<padding>'],
+            'interval': args['<interval>'],
             }
 
         update_vault(secrets,
@@ -147,21 +158,27 @@ def main():
             print('%s is not a known site!' % args['<name>'])
             sys.exit(1)
         secret = secrets[args['<name>']]['secret']
-        padding = secrets[args['<name>']]['padding']
+        padding = secrets[args['<name>']].get('padding',
+                                              _defaults['padding'])
+        interval = secrets[args['<name>']].get('interval',
+                                               _defaults['interval'])
         if sys.stdout.isatty():
             try:
                 while True:
-                    token = onetimepass.get_totp(secret)
+                    token = onetimepass.get_hotp(secret,
+                                                 int(time.time())//interval)
                     token = str(token).zfill(padding)
-                    time_left = 30 - (int(time.time()) % 30)
-                    time_left = str(time_left).zfill(2)
+                    time_left = interval - (int(time.time()) % interval)
+                    time_left = str(time_left).zfill(len(str(interval)))
                     sys.stdout.write("\r%s - Seconds Left %s" % (
                         token, time_left))
+                    time.sleep(1)
             except KeyboardInterrupt:
                 print("")
                 sys.exit(0)
         else:
-            token = onetimepass.get_totp(secret)
+            token = onetimepass.get_hotp(secret,
+                                         int(time.time())//interval)
             token = str(token).zfill(padding)
             print(token)
         sys.exit(0)
@@ -172,7 +189,9 @@ def main():
         data = "Name Description\n"
         data += "---- -----------\n"
         for name in sorted(secrets.keys()):
-            data += "%s %s\n" % (name, secrets[name]['description'])
+            data += "%s %s\n" % (name,
+                                 secrets[name].get('description',
+                                                   _defaults['description']))
         print(columnize(data))
         sys.exit(0)
 
@@ -211,6 +230,19 @@ def main():
             print('%s is not a known site!' % args['<name>'])
             sys.exit(1)
         secrets[args['<name>']]['padding'] = args['<padding>']
+        update_vault(secrets,
+                     vault_path,
+                     fingerprint=args['--fingerprint'],
+                     use_agent=use_agent)
+        sys.exit(0)
+
+    ###########################################################################
+
+    if args['set-interval']:
+        if args['<name>'] not in secrets:
+            print('%s is not a known site!' % args['<name>'])
+            sys.exit(1)
+        secrets[args['<name>']]['interval'] = args['<interval>']
         update_vault(secrets,
                      vault_path,
                      fingerprint=args['--fingerprint'],
