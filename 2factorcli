@@ -24,6 +24,7 @@ import json
 import onetimepass
 import os
 import sys
+import time
 
 
 def update_vault(secrets, vault_path, fingerprint=None, use_agent=True):
@@ -145,9 +146,24 @@ def main():
         if args['<name>'] not in secrets:
             print('%s is not a known site!' % args['<name>'])
             sys.exit(1)
-        token = onetimepass.get_totp(secrets[args['<name>']]['secret'])
-        token = str(token).zfill(secrets[args['<name>']]['padding'])
-        print(token)
+        secret = secrets[args['<name>']]['secret']
+        padding = secrets[args['<name>']]['padding']
+        if sys.stdout.isatty():
+            try:
+                while True:
+                    token = onetimepass.get_totp(secret)
+                    token = str(token).zfill(padding)
+                    time_left = 30 - (int(time.time()) % 30)
+                    time_left = str(time_left).zfill(2)
+                    sys.stdout.write("\r%s - Seconds Left %s" % (
+                        token, time_left))
+            except KeyboardInterrupt:
+                print("")
+                sys.exit(0)
+        else:
+            token = onetimepass.get_totp(secret)
+            token = str(token).zfill(padding)
+            print(token)
         sys.exit(0)
 
     ###########################################################################
