@@ -29,3 +29,8 @@ Install via pip:
 
     2factorcli add facebook FFFFFF email@example.org
     2factorcli get facebook
+
+# Bash completion
+
+You can find a sniplet to enable bash completion here:
+[https://gist.github.com/kormoc/e4fa7d9d523e9559984a](https://gist.github.com/kormoc/e4fa7d9d523e9559984a)
