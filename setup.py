@@ -10,7 +10,7 @@ from pip.req import parse_requirements
 
 config = {
     'name': '2factorcli',
-    'version': '1.0.0',
+    'version': '1.0.1',
     'description': 'This is a simple python program to allow you to store and '
     ' generate time-based one-time passwords in a GPG encrypted vault.',
     'author': 'Rob Smith',

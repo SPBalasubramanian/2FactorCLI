@@ -9,6 +9,7 @@ Usage:
     2factorcli.py [options] rename <name> <newname>
     2factorcli.py [options] set-description <name> <description>
     2factorcli.py [options] set-padding <name> <padding>
+    2factorcli.py [options] delete <name>
 
 Options:
   -v, --vault=<path>            GPG vault of secrets        [default: ~/.2factorcli.gpg]
@@ -138,6 +139,10 @@ def main():
     ###########################################################################
 
     if args['rename']:
+        if args['<newname>'] in secrets:
+            print("%s already exists! Please delete it before renaming"
+                  % args['<newname>'])
+            sys.exit(1)
         secrets[args['<newname>']] = secrets[args['<name>']]
         del secrets[args['<name>']]
         update_vault(secrets,
@@ -185,6 +190,18 @@ def main():
 
     ###########################################################################
 
+    if args['delete']:
+        if args['<name>'] not in secrets:
+            print('%s is not a known site!' % args['<name>'])
+            sys.exit(1)
+        del secrets[args['<name>']]
+        update_vault(secrets,
+                     vault_path,
+                     fingerprint=args['--fingerprint'],
+                     use_agent=use_agent)
+        sys.exit(0)
+
+    ###########################################################################
     print("Command is required!")
     sys.exit(1)
 
