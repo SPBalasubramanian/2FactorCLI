@@ -16,7 +16,7 @@ Options:
   -v, --vault=<path>            GPG vault of secrets        [default: ~/.2factorcli.gpg]
   --disable-agent               Disable using a GPG agent
   --fingerprint=<fingerprint>   Which fingerprint to use
-  --format=<format>             Format for list output      [default: pretty]
+  --format=<format>             Format for list output, pretty or names [default: pretty]
 """
 
 
@@ -188,14 +188,19 @@ def main():
     ###########################################################################
 
     if args['list']:
-        data = "Name Description\n"
-        data += "---- -----------\n"
-        for name in sorted(secrets.keys()):
-            data += "%s %s\n" % (name,
-                                 secrets[name].get('description',
-                                                   _defaults['description']))
-        print(columnize(data))
-        sys.exit(0)
+        if args['--format'] == 'pretty':
+            data = "Name Description\n"
+            data += "---- -----------\n"
+            for name in sorted(secrets.keys()):
+                data += "%s %s\n" % (name,
+                                     secrets[name].get('description',
+                                                       _defaults['description']))
+            print(columnize(data))
+            sys.exit(0)
+        if args['--format'] == 'names':
+            for name in sorted(secrets.keys()):
+                print(name)
+            sys.exit(0)
 
     ###########################################################################
 
