@@ -16,6 +16,7 @@ Options:
   -v, --vault=<path>            GPG vault of secrets        [default: ~/.2factorcli.gpg]
   --disable-agent               Disable using a GPG agent
   --fingerprint=<fingerprint>   Which fingerprint to use
+  --format=<format>             Format for list output      [default: pretty]
 """
 
 
@@ -77,8 +78,9 @@ def columnize(data):
     # Format each row using the computed format
     data = ''
     for row in rows:
+        if len(data):
+            data += "\n"
         data += fmt % tuple(row)
-        data += "\n"
     return data
 
 
